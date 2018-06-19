@@ -31,13 +31,13 @@ typedef _Atomic int CRYPTO_REF_COUNT;
 
 static ossl_inline int CRYPTO_UP_REF(_Atomic int *val, int *ret, void *lock)
 {
-    *ret = atomic_fetch_add_explicit(val, 1, memory_order_relaxed) + 1;
+    *ret = atomic_fetch_add_explicit((int*)val, 1, memory_order_relaxed) + 1;
     return 1;
 }
 
 static ossl_inline int CRYPTO_DOWN_REF(_Atomic int *val, int *ret, void *lock)
 {
-    *ret = atomic_fetch_sub_explicit(val, 1, memory_order_release) - 1;
+    *ret = atomic_fetch_sub_explicit((int*)val, 1, memory_order_release) - 1;
     if (*ret == 0)
         atomic_thread_fence(memory_order_acquire);
     return 1;
