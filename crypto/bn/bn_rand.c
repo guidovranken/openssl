@@ -43,9 +43,15 @@ static int bnrand(BNRAND_FLAG flag, BIGNUM *rnd, int bits, int top, int bottom)
     }
 
     /* make a random number and set the top and bottom bits */
+#ifndef FUZZING
     b = flag == NORMAL ? RAND_bytes(buf, bytes) : RAND_priv_bytes(buf, bytes);
     if (b <= 0)
         goto err;
+#else
+    for (int i = 0; i < bytes; i++) {
+        buf[i] = rand();
+    }
+#endif
 
     if (flag == TESTING) {
         /*
