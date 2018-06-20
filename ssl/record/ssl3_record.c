@@ -1112,9 +1112,14 @@ int tls1_enc(SSL *s, SSL3_RECORD *recs, size_t n_recs, int sending)
             }
         }
 
+#ifndef FUZZING
         /* TODO(size_t): Convert this call */
         tmpr = EVP_Cipher(ds, recs[0].data, recs[0].input,
                           (unsigned int)reclen[0]);
+#else
+        memcpy(recs[0].data, recs[0].input, (unsigned int)reclen[0]);
+        tmpr = 1;
+#endif
         if ((EVP_CIPHER_flags(EVP_CIPHER_CTX_cipher(ds))
              & EVP_CIPH_FLAG_CUSTOM_CIPHER)
             ? (tmpr < 0)
