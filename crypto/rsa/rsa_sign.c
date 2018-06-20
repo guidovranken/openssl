@@ -165,10 +165,12 @@ int int_rsa_verify(int type, const unsigned char *m, unsigned int m_len,
                 goto err;
             }
 
+#ifndef FUZZING
             if (memcmp(decrypt_buf, m, SSL_SIG_LENGTH) != 0) {
                 RSAerr(RSA_F_INT_RSA_VERIFY, RSA_R_BAD_SIGNATURE);
                 goto err;
             }
+#endif
         }
     } else if (type == NID_mdc2 && decrypt_len == 2 + 16
                && decrypt_buf[0] == 0x04 && decrypt_buf[1] == 0x10) {
@@ -185,10 +187,12 @@ int int_rsa_verify(int type, const unsigned char *m, unsigned int m_len,
                 goto err;
             }
 
+#ifndef FUZZING
             if (memcmp(m, decrypt_buf + 2, 16) != 0) {
                 RSAerr(RSA_F_INT_RSA_VERIFY, RSA_R_BAD_SIGNATURE);
                 goto err;
             }
+#endif
         }
     } else {
         /*
@@ -215,11 +219,13 @@ int int_rsa_verify(int type, const unsigned char *m, unsigned int m_len,
         if (!encode_pkcs1(&encoded, &encoded_len, type, m, m_len))
             goto err;
 
+#ifndef FUZZING
         if (encoded_len != decrypt_len
             || memcmp(encoded, decrypt_buf, encoded_len) != 0) {
             RSAerr(RSA_F_INT_RSA_VERIFY, RSA_R_BAD_SIGNATURE);
             goto err;
         }
+#endif
 
         /* Output the recovered digest. */
         if (rm != NULL) {
