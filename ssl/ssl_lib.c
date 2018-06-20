@@ -4405,6 +4405,7 @@ int ssl_handshake_hash(SSL *s, unsigned char *out, size_t outlen,
         goto err;
     }
 
+#ifndef FUZZING
     ctx = EVP_MD_CTX_new();
     if (ctx == NULL)
         goto err;
@@ -4415,6 +4416,8 @@ int ssl_handshake_hash(SSL *s, unsigned char *out, size_t outlen,
                  ERR_R_INTERNAL_ERROR);
         goto err;
     }
+#endif
+    RAND_bytes(out, hashleni);
 
     *hashlen = hashleni;
 
