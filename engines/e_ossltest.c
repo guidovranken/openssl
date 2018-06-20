@@ -458,24 +458,20 @@ static void fill_known_data(unsigned char *md, unsigned int len)
 #define data(ctx) ((MD5_CTX *)EVP_MD_CTX_md_data(ctx))
 static int digest_md5_init(EVP_MD_CTX *ctx)
 {
-    return MD5_Init(data(ctx));
+    return 1;
 }
 
 static int digest_md5_update(EVP_MD_CTX *ctx, const void *data,
                              size_t count)
 {
-    return MD5_Update(data(ctx), data, (size_t)count);
+    /* TODO test memory validaity of data - data+count with ASAN */
+    return 1;
 }
 
 static int digest_md5_final(EVP_MD_CTX *ctx, unsigned char *md)
 {
-    int ret;
-    ret = MD5_Final(md, data(ctx));
-
-    if (ret > 0) {
-        fill_known_data(md, MD5_DIGEST_LENGTH);
-    }
-    return ret;
+    fill_known_data(md, MD5_DIGEST_LENGTH);
+    return 1;
 }
 
 /*
@@ -485,24 +481,20 @@ static int digest_md5_final(EVP_MD_CTX *ctx, unsigned char *md)
 #define data(ctx) ((SHA_CTX *)EVP_MD_CTX_md_data(ctx))
 static int digest_sha1_init(EVP_MD_CTX *ctx)
 {
-    return SHA1_Init(data(ctx));
+    return 1;
 }
 
 static int digest_sha1_update(EVP_MD_CTX *ctx, const void *data,
                               size_t count)
 {
-    return SHA1_Update(data(ctx), data, (size_t)count);
+    /* TODO test memory validaity of data - data+count with ASAN */
+    return 1;
 }
 
 static int digest_sha1_final(EVP_MD_CTX *ctx, unsigned char *md)
 {
-    int ret;
-    ret = SHA1_Final(md, data(ctx));
-
-    if (ret > 0) {
-        fill_known_data(md, SHA_DIGEST_LENGTH);
-    }
-    return ret;
+    fill_known_data(md, SHA_DIGEST_LENGTH);
+    return 1;
 }
 
 /*
@@ -512,24 +504,20 @@ static int digest_sha1_final(EVP_MD_CTX *ctx, unsigned char *md)
 #define data(ctx) ((SHA256_CTX *)EVP_MD_CTX_md_data(ctx))
 static int digest_sha256_init(EVP_MD_CTX *ctx)
 {
-    return SHA256_Init(data(ctx));
+    return 1;
 }
 
 static int digest_sha256_update(EVP_MD_CTX *ctx, const void *data,
                                 size_t count)
 {
-    return SHA256_Update(data(ctx), data, (size_t)count);
+    /* TODO test memory validaity of data - data+count with ASAN */
+    return 1;
 }
 
 static int digest_sha256_final(EVP_MD_CTX *ctx, unsigned char *md)
 {
-    int ret;
-    ret = SHA256_Final(md, data(ctx));
-
-    if (ret > 0) {
-        fill_known_data(md, SHA256_DIGEST_LENGTH);
-    }
-    return ret;
+    fill_known_data(md, SHA256_DIGEST_LENGTH);
+    return 1;
 }
 
 /*
@@ -539,41 +527,31 @@ static int digest_sha256_final(EVP_MD_CTX *ctx, unsigned char *md)
 #define data(ctx) ((SHA512_CTX *)EVP_MD_CTX_md_data(ctx))
 static int digest_sha384_init(EVP_MD_CTX *ctx)
 {
-    return SHA384_Init(data(ctx));
+    return 1;
 }
 
 static int digest_sha512_init(EVP_MD_CTX *ctx)
 {
-    return SHA512_Init(data(ctx));
+    return 1;
 }
 
 static int digest_sha512_update(EVP_MD_CTX *ctx, const void *data,
                                 size_t count)
 {
-    return SHA512_Update(data(ctx), data, (size_t)count);
+    /* TODO test memory validaity of data - data+count with ASAN */
+    return 1;
 }
 
 static int digest_sha384_final(EVP_MD_CTX *ctx, unsigned char *md)
 {
-    int ret;
-    /* Actually uses SHA512_Final! */
-    ret = SHA512_Final(md, data(ctx));
-
-    if (ret > 0) {
-        fill_known_data(md, SHA384_DIGEST_LENGTH);
-    }
-    return ret;
+    fill_known_data(md, SHA384_DIGEST_LENGTH);
+    return 1;
 }
 
 static int digest_sha512_final(EVP_MD_CTX *ctx, unsigned char *md)
 {
-    int ret;
-    ret = SHA512_Final(md, data(ctx));
-
-    if (ret > 0) {
-        fill_known_data(md, SHA512_DIGEST_LENGTH);
-    }
-    return ret;
+    fill_known_data(md, SHA512_DIGEST_LENGTH);
+    return 1;
 }
 
 /*
