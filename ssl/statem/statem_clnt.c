@@ -2408,10 +2408,10 @@ MSG_PROCESS_RETURN tls_process_key_exchange(SSL *s, PACKET *pkt)
             goto err;
         }
 
+#ifndef FUZZING
         rv = EVP_DigestVerify(md_ctx, PACKET_data(&signature),
                               PACKET_remaining(&signature), tbs, tbslen);
         OPENSSL_free(tbs);
-#ifndef FUZZING
         if (rv <= 0) {
             SSLfatal(s, SSL_AD_DECRYPT_ERROR, SSL_F_TLS_PROCESS_KEY_EXCHANGE,
                      SSL_R_BAD_SIGNATURE);
