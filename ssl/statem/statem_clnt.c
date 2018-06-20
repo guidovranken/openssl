@@ -1836,12 +1836,20 @@ MSG_PROCESS_RETURN tls_process_server_certificate(SSL *s, PACKET *pkt)
     if ((SSL_IS_TLS13(s) && !PACKET_get_1(pkt, &context))
             || context != 0
             || !PACKET_get_net_3(pkt, &cert_list_len)
+#ifndef FUZZING
             || PACKET_remaining(pkt) != cert_list_len
+#else
+            || PACKET_remaining(pkt) < cert_list_len
+#endif
             || PACKET_remaining(pkt) == 0) {
         SSLfatal(s, SSL_AD_DECODE_ERROR, SSL_F_TLS_PROCESS_SERVER_CERTIFICATE,
                  SSL_R_LENGTH_MISMATCH);
         goto err;
     }
+#ifdef FUZZING
+    pkt->remaining = cert_list_len;
+    /* TODO poison (ASAN) remainder of packet? */
+#endif
     for (chainidx = 0; PACKET_remaining(pkt); chainidx++) {
         if (!PACKET_get_net_3(pkt, &cert_len)
             || !PACKET_get_bytes(pkt, &certbytes, cert_len)) {
@@ -2409,6 +2417,8 @@ MSG_PROCESS_RETURN tls_process_key_exchange(SSL *s, PACKET *pkt)
                      SSL_R_BAD_SIGNATURE);
             goto err;
         }
+#else
+        OPENSSL_free(tbs);
 #endif
         EVP_MD_CTX_free(md_ctx);
         md_ctx = NULL;
@@ -2569,11 +2579,19 @@ MSG_PROCESS_RETURN tls_process_new_session_ticket(SSL *s, PACKET *pkt)
                 || !PACKET_get_length_prefixed_1(pkt, &nonce)))
         || !PACKET_get_net_2(pkt, &ticklen)
         || (SSL_IS_TLS13(s) ? (ticklen == 0 || PACKET_remaining(pkt) < ticklen)
+#ifndef FUZZING
                             : PACKET_remaining(pkt) != ticklen)) {
+#else
+                            : PACKET_remaining(pkt) < ticklen)) {
+#endif
         SSLfatal(s, SSL_AD_DECODE_ERROR, SSL_F_TLS_PROCESS_NEW_SESSION_TICKET,
                  SSL_R_LENGTH_MISMATCH);
         goto err;
     }
+#ifdef FUZZING
+    pkt->remaining = ticklen;
+    /* TODO poison (ASAN) remainder of packet? */
+#endif
 
     /*
      * Server is allowed to change its mind (in <=TLSv1.2) and send an empty
@@ -2729,11 +2747,19 @@ int tls_process_cert_status_body(SSL *s, PACKET *pkt)
         return 0;
     }
     if (!PACKET_get_net_3_len(pkt, &resplen)
+#ifndef FUZZING
         || PACKET_remaining(pkt) != resplen) {
+#else
+        || PACKET_remaining(pkt) < resplen) {
+#endif
         SSLfatal(s, SSL_AD_DECODE_ERROR, SSL_F_TLS_PROCESS_CERT_STATUS_BODY,
                  SSL_R_LENGTH_MISMATCH);
         return 0;
     }
+#ifdef FUZZING
+    pkt->remaining = resplen;
+    /* TODO poison (ASAN) remainder of packet? */
+#endif
     s->ext.ocsp.resp = OPENSSL_malloc(resplen);
     if (s->ext.ocsp.resp == NULL) {
         SSLfatal(s, SSL_AD_INTERNAL_ERROR, SSL_F_TLS_PROCESS_CERT_STATUS_BODY,
